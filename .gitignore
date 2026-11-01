@@ -8,3 +8,4 @@ __pycache__/
 *service-account*.json
 .claude/settings.local.json
 brain/
+secrets/

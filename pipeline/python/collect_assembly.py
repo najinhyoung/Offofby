@@ -72,7 +72,8 @@ def main() -> None:
         print("경고: ASSEMBLY_API_KEY 미설정, 키 없이 호출합니다.", file=sys.stderr)
 
     rows = collect(key)
-    snapshot_date = dt.date.today().isoformat()
+    # Actions(UTC)에서도 한국 날짜가 찍히도록 KST 기준
+    snapshot_date = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).date().isoformat()
     district = sum(1 for r in rows if r["election_type"] == "지역구")
     print(f"{snapshot_date}: 의원 {len(rows)}명 (지역구 {district}, 비례 {len(rows) - district})")
 
