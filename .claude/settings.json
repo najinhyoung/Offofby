@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(bq:*)",
+      "PowerShell(bq:*)",
+      "Bash(python pipeline/apply_sql.py:*)",
+      "PowerShell(python pipeline/apply_sql.py:*)"
+    ]
+  }
+}

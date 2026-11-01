@@ -1,0 +1,9 @@
+.env
+.env.*
+pipeline/.env
+pipeline/out/
+__pycache__/
+*.pyc
+.venv/
+*service-account*.json
+.claude/settings.local.json

@@ -1,0 +1,25 @@
+# Offofby
+
+대한민국 대통령·장관·국회의원 목록과 (향후) 평판등급·한줄평을 보여주는 웹.
+전체 계획과 단계는 `docs/PLAN.md` 참고.
+
+## 구조
+- `web/` — Next.js(App Router) + Tailwind. Vercel 배포 루트.
+- `pipeline/` — Python 수집·적재·감성·스코어링. GitHub Actions(`.github/workflows/daily.yml`)로 매일 실행.
+- `pipeline/sql/ddl/`, `pipeline/sql/dml/` — BigQuery SQL. **모든 DB 변경은 이 파일들로만.**
+
+## 오케스트레이션 (메인 세션의 역할)
+메인 세션이 오케스트레이터다. 작업을 아래 서브에이전트(`.claude/agents/`)에 나누고, 인터페이스(테이블 스키마, API 형태)를 먼저 확정한 뒤 넘긴다.
+- `frontend` — web/ 화면
+- `collector` — 인물·언급량·뉴스 수집 스크립트
+- `db` — BigQuery 스키마·적재 SQL 작성 (실행은 하지 않음)
+- `sentiment` — Claude API 감성 평가 배치
+- `scoring` — 언급량·감성 기반 등급 산정
+
+## 절대 규칙
+1. **DDL/DML 실행 전 반드시 사용자 승인.** `bq`, `pipeline/apply_sql.py` 등 BigQuery에 쓰는 명령은 사용자가 SQL 파일을 확인하고 승인한 뒤에만 실행한다. 승인은 실행 1건마다 따로 받는다.
+2. 수기 관리 데이터 없음. 모든 인물 데이터는 자동 수집, 변경은 SCD2 이력으로 보존.
+3. 운영 파이프라인에서 LLM 호출은 감성 평가에만. 수집·적재·스코어링은 일반 코드.
+4. 뉴스는 제목·요약·링크만 저장(본문 저장 금지).
+5. 비밀값(API 키, 서비스계정 JSON)은 커밋 금지. 로컬은 `.env.local` / `pipeline/.env`, 운영은 Vercel·GitHub Secrets.
+6. 화면에 "신용평가"라는 표현을 쓰지 않는다(신용정보법 용어). 등급 명칭은 확정 전까지 "평판등급(준비 중)".
