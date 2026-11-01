@@ -1,6 +1,6 @@
 -- stg_assembly(오늘 스냅샷) → members(SCD2)
 -- 1) 바뀌었거나 사라진 현재 행을 닫는다  2) 새로 생겼거나 바뀐 행을 연다
--- 실행: python pipeline/apply_sql.py pipeline/sql/dml/merge_members.sql --approve  (사용자 승인 필요)
+-- 실행: python pipeline/python/apply_sql.py pipeline/sql/dml/merge_members.sql --approve  (사용자 승인 필요)
 
 DECLARE snap DATE DEFAULT (SELECT MAX(snapshot_date) FROM `${project}.${dataset}.stg_assembly`);
 

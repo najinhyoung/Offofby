@@ -3,7 +3,7 @@
 사용: python pipeline/python/apply_sql.py <sql 파일> [--approve]
 --approve 없이 실행하면 SQL과 예상 처리량(dry run)만 보여주고 실행하지 않는다.
 Claude Code에서는 .claude/settings.json에 의해 실행 전 항상 사용자 승인을 요청한다.
-환경변수: GCP_PROJECT, BQ_DATASET (SQL 안의 ${project}, ${dataset} 치환)
+환경변수: GCP_PROJECT, BQ_DATASET (SQL 안의 ${project}, ${dataset} 치환), BQ_LOCATION(기본 asia-northeast3)
 """
 import argparse
 import os
@@ -22,13 +22,14 @@ def main() -> None:
 
     project = os.environ.get("GCP_PROJECT")
     dataset = os.environ.get("BQ_DATASET", "offofby")
+    location = os.environ.get("BQ_LOCATION", "asia-northeast3")
     if not project:
         sys.exit("GCP_PROJECT 환경변수가 필요합니다.")
 
     sql = string.Template(args.sql_file.read_text(encoding="utf-8")).substitute(project=project, dataset=dataset)
     print(f"--- {args.sql_file} ---\n{sql}\n")
 
-    client = bigquery.Client(project=project)
+    client = bigquery.Client(project=project, location=location)
     dry = client.query(sql, job_config=bigquery.QueryJobConfig(dry_run=True, use_query_cache=False))
     print(f"예상 처리량: {dry.total_bytes_processed / 1e6:.2f} MB")
 

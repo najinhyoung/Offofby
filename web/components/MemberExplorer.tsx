@@ -14,8 +14,16 @@ export function MemberExplorer({ members }: { members: Member[] }) {
   const [party, setParty] = useState(ALL);
   const [type, setType] = useState("지역구");
 
-  const regions = useMemo(() => [ALL, ...new Set(members.map((m) => regionOf(m.district)))], [members]);
-  const parties = useMemo(() => [ALL, ...new Set(members.map((m) => m.party))], [members]);
+  // 시도는 가나다순, 비례대표는 맨 뒤
+  const regions = useMemo(() => {
+    const set = new Set(members.map((m) => regionOf(m.district)));
+    const sorted = [...set].filter((r) => r !== "비례대표").sort((a, b) => a.localeCompare(b, "ko"));
+    return [ALL, ...sorted, ...(set.has("비례대표") ? ["비례대표"] : [])];
+  }, [members]);
+  const parties = useMemo(
+    () => [ALL, ...[...new Set(members.map((m) => m.party))].sort((a, b) => a.localeCompare(b, "ko"))],
+    [members],
+  );
 
   const filtered = members.filter(
     (m) =>

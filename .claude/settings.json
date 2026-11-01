@@ -5,6 +5,8 @@
       "PowerShell(bq:*)",
       "Bash(python pipeline/python/apply_sql.py:*)",
       "PowerShell(python pipeline/python/apply_sql.py:*)",
+      "Bash(python pipeline/python/load_snapshot.py:*)",
+      "PowerShell(python pipeline/python/load_snapshot.py:*)",
       "Bash(git push:*)",
       "PowerShell(git push:*)"
     ]

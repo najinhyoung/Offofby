@@ -21,7 +21,7 @@
 - `scoring` — 언급량·감성 기반 등급 산정
 
 ## 절대 규칙
-1. **DDL/DML 실행 전 반드시 사용자 승인.** `bq`, `pipeline/python/apply_sql.py` 등 BigQuery에 쓰는 명령은 사용자가 SQL 파일을 확인하고 승인한 뒤에만 실행한다. 승인은 실행 1건마다 따로 받는다.
+1. **DDL/DML 실행 전 반드시 사용자 승인.** `bq`, `pipeline/python/apply_sql.py`, `pipeline/python/load_snapshot.py` 등 BigQuery에 쓰는 명령은 사용자가 SQL 파일을 확인하고 승인한 뒤에만 실행한다. 승인은 실행 1건마다 따로 받는다.
 1-1. **git 배포(push) 전 반드시 사용자 승인.** `git push`는 사용자가 지시하거나 승인한 경우에만 실행한다. 커밋도 사용자 요청 시에만.
 2. 수기 관리 데이터 없음. 모든 인물 데이터는 자동 수집, 변경은 SCD2 이력으로 보존.
 3. 운영 파이프라인에서 LLM 호출은 감성 평가에만. 수집·적재·스코어링은 일반 코드.

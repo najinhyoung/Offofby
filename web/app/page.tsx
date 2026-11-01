@@ -19,6 +19,11 @@ export default async function Home() {
         <h2 id="cabinet-heading" className="mb-3 text-xl font-bold">
           대통령·국무위원
         </h2>
+        {cabinet.length === 0 && (
+          <p className="rounded border border-dashed border-line px-3 py-6 text-center text-sm text-muted">
+            대통령·국무위원 자동 수집은 준비 중입니다.
+          </p>
+        )}
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {cabinet.map((c) => (
             <li key={c.position} className="flex items-center justify-between gap-3 rounded border border-line bg-card px-3 py-3">

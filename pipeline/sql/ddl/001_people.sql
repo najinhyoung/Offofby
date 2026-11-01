@@ -1,5 +1,5 @@
 -- 인물 테이블(SCD2 이력) + 일일 스테이징 + 화면용 현재 뷰
--- 실행: python pipeline/apply_sql.py pipeline/sql/ddl/001_people.sql --approve  (사용자 승인 필요)
+-- 실행: python pipeline/python/apply_sql.py pipeline/sql/ddl/001_people.sql --approve  (사용자 승인 필요)
 
 CREATE SCHEMA IF NOT EXISTS `${project}.${dataset}`
 OPTIONS (location = 'asia-northeast3');
