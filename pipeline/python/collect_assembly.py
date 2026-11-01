@@ -1,6 +1,6 @@
 """열린국회정보 OpenAPI에서 현직 국회의원 인적사항을 받아 일일 스냅샷(jsonl)으로 저장한다.
 
-사용: python pipeline/collect_assembly.py [--dry-run]
+사용: python pipeline/python/collect_assembly.py [--dry-run]
 환경변수: ASSEMBLY_API_KEY
 """
 import argparse
@@ -12,9 +12,11 @@ import sys
 import urllib.parse
 import urllib.request
 
-ENDPOINT = "https://open.assembly.go.kr/portal/openapi/nwvrqwxyaytdsfvhu"  # 국회의원 인적사항
+from assembly_apis import ASSEMBLY_APIS
+
+ENDPOINT = ASSEMBLY_APIS["members"]  # 국회의원 인적사항
 PAGE_SIZE = 100
-OUT_DIR = pathlib.Path(__file__).parent / "out"
+OUT_DIR = pathlib.Path(__file__).parents[1] / "out"
 
 FIELDS = {
     "MONA_CD": "member_code",
@@ -33,8 +35,12 @@ FIELDS = {
 
 
 def fetch_page(key: str, page: int) -> list[dict]:
-    query = urllib.parse.urlencode({"KEY": key, "Type": "json", "pIndex": page, "pSize": PAGE_SIZE})
-    with urllib.request.urlopen(f"{ENDPOINT}?{query}", timeout=30) as resp:
+    params = {"Type": "json", "pIndex": page, "pSize": PAGE_SIZE}
+    if key:
+        params["KEY"] = key
+    query = urllib.parse.urlencode(params)
+    req = urllib.request.Request(f"{ENDPOINT}?{query}", headers={"User-Agent": "offofby-collector"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
         body = json.load(resp)
     if "nwvrqwxyaytdsfvhu" not in body:
         # 데이터 끝이면 INFO-200, 그 외는 오류
@@ -60,9 +66,10 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="저장하지 않고 요약만 출력")
     args = parser.parse_args()
 
-    key = os.environ.get("ASSEMBLY_API_KEY")
+    # 키 없이도 동작하지만, 호출 제한을 피하려면 발급 키를 ASSEMBLY_API_KEY로 설정 권장
+    key = os.environ.get("ASSEMBLY_API_KEY", "")
     if not key:
-        sys.exit("ASSEMBLY_API_KEY 환경변수가 필요합니다.")
+        print("경고: ASSEMBLY_API_KEY 미설정, 키 없이 호출합니다.", file=sys.stderr)
 
     rows = collect(key)
     snapshot_date = dt.date.today().isoformat()

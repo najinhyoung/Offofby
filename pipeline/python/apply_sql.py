@@ -1,6 +1,6 @@
 """승인된 SQL 파일을 BigQuery에 실행한다. 모든 DDL/DML은 이 스크립트로만 실행한다.
 
-사용: python pipeline/apply_sql.py <sql 파일> [--approve]
+사용: python pipeline/python/apply_sql.py <sql 파일> [--approve]
 --approve 없이 실행하면 SQL과 예상 처리량(dry run)만 보여주고 실행하지 않는다.
 Claude Code에서는 .claude/settings.json에 의해 실행 전 항상 사용자 승인을 요청한다.
 환경변수: GCP_PROJECT, BQ_DATASET (SQL 안의 ${project}, ${dataset} 치환)

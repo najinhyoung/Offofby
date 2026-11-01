@@ -17,7 +17,7 @@ jobs:
       - name: 국회의원 수집
         env:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
-        run: python pipeline/collect_assembly.py
+        run: python pipeline/python/collect_assembly.py
       # 적재(MERGE)·장관 수집·ISR 재검증 단계는 SQL 승인 후 추가
       - uses: actions/upload-artifact@v4
         with:
