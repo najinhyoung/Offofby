@@ -39,7 +39,13 @@ export async function getMember(code: string): Promise<Member | null> {
 
 export async function getCabinet(): Promise<CabinetPost[]> {
   if (usingSampleData) return sampleCabinet;
-  return query<CabinetPost>(
-    `SELECT position, rank_order, name FROM \`${project}.${dataset}.v_current_cabinet\` ORDER BY rank_order`,
+  const rows = await query<Omit<CabinetPost, "start_date"> & { start_date: { value: string } | string | null }>(
+    `SELECT position, rank_order, name, start_date, verified FROM \`${project}.${dataset}.v_current_cabinet\` ORDER BY rank_order`,
   );
+  // BigQuery DATE는 {value: "YYYY-MM-DD"} 객체로 온다
+  return rows.map((r) => ({
+    ...r,
+    start_date: r.start_date && typeof r.start_date === "object" ? r.start_date.value : r.start_date,
+    verified: Boolean(r.verified),
+  }));
 }

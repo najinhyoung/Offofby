@@ -30,4 +30,10 @@ export const sampleMembers: Member[] = Array.from({ length: 30 }, (_, i) => {
 export const sampleCabinet: CabinetPost[] = [
   "대통령", "국무총리", "기획재정부장관", "교육부장관", "과학기술정보통신부장관", "외교부장관",
   "통일부장관", "법무부장관", "국방부장관", "행정안전부장관",
-].map((position, i) => ({ position, rank_order: i, name: `예시인물${String(i + 1).padStart(2, "0")}` }));
+].map((position, i) => ({
+  position,
+  rank_order: i,
+  name: i === 7 ? null : `예시인물${String(i + 1).padStart(2, "0")}`,
+  start_date: i === 7 ? null : "2025-07-01",
+  verified: i % 3 !== 0,
+}));

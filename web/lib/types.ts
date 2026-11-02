@@ -16,5 +16,7 @@ export type Member = {
 export type CabinetPost = {
   position: string;
   rank_order: number;
-  name: string;
+  name: string | null; // 공석이면 null
+  start_date: string | null; // 취임일 YYYY-MM-DD
+  verified: boolean; // 기관 누리집에서 이름 확인됨
 };
