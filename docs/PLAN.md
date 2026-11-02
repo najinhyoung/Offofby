@@ -1,4 +1,9 @@
-# Offofby — 대한민국 공직자 목록·평가 웹 (작업 계획)
+# Offofby — 대한민국 선출직 목록·평가 웹 (작업 계획)
+
+> **2026-11-02 방향 수정** — 대상을 선출직(대통령·국회의원)으로 한정(국무위원 제거, cabinet→president 테이블 교체).
+> 발화 소스를 네이버에서 Google News RSS·Google Trends·YouTube·커뮤니티(디시·에펨코리아·클리앙·루리웹)로 변경(무료 우선, 급증 시 유료 API 허용).
+> 등급(AAA+~CC) 대신 **100점 만점 스코어**. 발화 원문은 저장하지 않고 라벨·집계만. 장기: 헤더/푸터 Google 광고, SEO/GEO.
+> 아래 본문 중 충돌하는 부분은 이 메모와 「2단계 설계」 절이 우선한다.
 
 ## Context
 빈 저장소(main, 커밋 없음)에서 시작. 목표는 대통령·장관·지역구 국회의원 목록 웹을 먼저 Vercel에 띄우고,
@@ -30,9 +35,12 @@
 | 대상 | 소스 | 비고 |
 |---|---|---|
 | 국회의원·지역구·정당 | 열린국회정보 OpenAPI | 일 1회, 변경 감지 |
-| 대통령·국무위원(장관) | 위키백과 MediaWiki API(현 내각 문서) 1차 + 각 부처 누리집 장관 페이지 교차검증 | 공식 기계판독 API가 없어 두 소스 불일치 시 반영 보류 + Issue 알림 |
-| 발화량(인터넷 언급량) | 네이버 검색 API 뉴스·블로그·카페 결과 건수(일 25,000건 무료) + 네이버 데이터랩 검색어 트렌드(상대 지수) | 동명이인 대응: "이름+직함/정당" 쿼리 |
-| 뉴스(감성 대상) | 네이버 뉴스 검색 API | 제목·요약·링크만 저장(저작권) |
+| 대통령 | 위키백과 「이재명 정부의 국무위원」 표의 대통령 행 + 대통령실 누리집 교차검증 | 미확인 이름 변경은 3일 연속 수집 시에만 반영(위키 훼손 방어) |
+| 뉴스 | Google News RSS(`news.google.com/rss/search`, 인물당 1요청/일) | 제목·링크·언론사·시각만 저장 |
+| 관심도 | Google Trends(pytrends, 비공식) 5개 묶음 + 기준어 정규화 | 선택 소스. 차단 잦아 실패해도 파이프라인 계속 |
+| 유튜브 | YouTube Data API v3 search(100 unit)+commentThreads(1 unit), 일 10,000 unit | 인물 ~80명/일 순환(4일 주기). 댓글은 감성 후 폐기 |
+| 커뮤니티 | 디시(정치 갤러리)·에펨코리아·클리앙·루리웹 검색 페이지 | 구현 전 robots.txt 확인, 초당 1요청 이하. 글 수 집계 + 감성 후 폐기 |
+| 유료 확장 | Google Custom Search JSON API(1,000건당 $5), YouTube 쿼터 증설 | 발화량 급증·필요 시 사용자 승인 후 키 설정으로 활성화 |
 
 ## 역할 분담
 | 역할 | 담당 |
@@ -50,8 +58,8 @@
 |---|---|---|---|---|
 | 0. 기반 | Next.js 스캐폴드, CLAUDE.md, `.claude/agents/`·settings, GCP 서비스계정, Vercel 연결 | 작음 (1세션) | 계정·키 설정 30분 | $0 |
 | 1. 목록 웹 ★지금 | 의원·내각 자동 수집(일 1회, 이력), BigQuery 스키마, 메인/의원 목록(지역·정당 필터·검색)/상세/대통령·장관 페이지, 등급 자리 표시 | 중간 (2~4세션) | DDL·적재 SQL 승인 | $0 |
-| 2. 언급량·감성 | 네이버 언급량·뉴스 수집, Claude 감성 배치 | 중간 | 감성 샘플 검수 | Claude API 수~수십 달러(기사량 따라, 일일 상한 설정) |
-| 3. 스코어링 | 언급량·감성 결합 등급 모델, `scores` 테이블, 첫 화면 등급, 방법론 공개 페이지 | 중간 | 방법론 검토 | $0 |
+| 2. 발화·감성 | Google News·Trends·YouTube·커뮤니티 수집, Claude 감성 배치(원문 폐기) | 중간 | 감성 샘플 검수 | Claude API 수~수십 달러(기사량 따라, 일일 상한 설정) |
+| 3. 스코어링 | 발화·감성 결합 100점 모델(방법론 별도 검토), `scores` 테이블, 첫 화면 점수, 방법론 공개 페이지 | 중간 | 방법론 검토 | $0 |
 | 4. 로그인·한줄평 | 본인확인, Cloud SQL, 댓글·신고·관리 | 큼 | 정책 결정 | Cloud SQL ~$10~15 + 본인확인 비용 |
 
 ## 1단계 파일 구조(예정)
@@ -81,3 +89,19 @@ CLAUDE.md
 - 수집 스크립트 dry-run → 결과 CSV로 의원 수(지역구 254명)·장관 수 확인 후, 승인 받아 BigQuery 적재.
 - 변경 감지 테스트: 스냅샷 하나를 임의 수정해 SCD2 이력·Issue 알림 생성 확인.
 - `npm run dev` + 브라우저 패널로 목록·필터·상세·모바일 폭 확인, Vercel 프리뷰에서 ISR 재검증 확인.
+
+
+## 2단계 설계 (2026-11-02 확정)
+- person_id: 의원 `member_code`, 대통령 `PRESIDENT`. 쿼리 `"이름" 의원` / `"이름" 대통령`.
+- 테이블(모두 date 파티션): `news(person_id, source, title, url, publisher, published_at, collected_date)`,
+  `mentions_daily(person_id, source, metric, date, value)`, `sentiment_daily(person_id, source, date, n_pos, n_neu, n_neg, n_sampled, model, prompt_version)`,
+  이후 `scores(person_id, date, score_0_100, components JSON, method_version)`.
+- 감성: `pipeline/claude/sentiment.py` — Haiku + Message Batches API + 프롬프트 캐싱. 출력 `{about_person, label, intensity}`. 인물당·전체 일 표본 상한. 샘플 100건 사용자 검수.
+- Actions: `daily.yml`에 발화 수집 잡을 인물 잡과 분리해 병렬. Secrets `YOUTUBE_API_KEY`, `ANTHROPIC_API_KEY`(선택 `GOOGLE_CSE_KEY`).
+
+## 3단계 메모 — 100점 스코어
+후보 골격: 소스별 긍부정 비율 → 표본 수 베이지안 수축 → 시간 감쇠 → 소스 가중 평균 → 0~100 정규화. `docs/methodology.md`로 공개. 방법론은 별도 세션에서 사용자와 확정.
+
+## 장기 메모
+- **광고**: 헤더/푸터 광고 슬롯 자리 예약. AdSense 승인에 개인정보처리방침·이용약관·쿠키 동의·UGC 운영정책 필요 → 4단계와 함께.
+- **SEO/GEO**: 의원 상세 정적 생성(`generateStaticParams`), `generateMetadata`, `sitemap.ts`/`robots.ts`, `schema.org/Person` JSON-LD, 방법론 페이지, `/llms.txt`. 점수 공개 시점에 일괄.

@@ -13,10 +13,8 @@ export type Member = {
   homepage: string | null;
 };
 
-export type CabinetPost = {
-  position: string;
-  rank_order: number;
-  name: string | null; // 공석이면 null
+export type President = {
+  name: string | null; // 공석(권한대행 체제 등)이면 null
   start_date: string | null; // 취임일 YYYY-MM-DD
-  verified: boolean; // 기관 누리집에서 이름 확인됨
+  verified: boolean; // 대통령실 누리집에서 이름 확인됨
 };

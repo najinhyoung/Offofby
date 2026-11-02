@@ -1,4 +1,4 @@
-import type { CabinetPost, Member } from "./types";
+import type { Member, President } from "./types";
 
 // 로컬 개발용 가짜 데이터. 실존 인물·정당이 아님.
 const districts = [
@@ -27,13 +27,4 @@ export const sampleMembers: Member[] = Array.from({ length: 30 }, (_, i) => {
   };
 });
 
-export const sampleCabinet: CabinetPost[] = [
-  "대통령", "국무총리", "기획재정부장관", "교육부장관", "과학기술정보통신부장관", "외교부장관",
-  "통일부장관", "법무부장관", "국방부장관", "행정안전부장관",
-].map((position, i) => ({
-  position,
-  rank_order: i,
-  name: i === 7 ? null : `예시인물${String(i + 1).padStart(2, "0")}`,
-  start_date: i === 7 ? null : "2025-07-01",
-  verified: i % 3 !== 0,
-}));
+export const samplePresident: President = { name: "예시대통령", start_date: "2025-06-04", verified: false };

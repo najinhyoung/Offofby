@@ -1,7 +1,7 @@
 import "server-only";
 import { BigQuery } from "@google-cloud/bigquery";
-import type { CabinetPost, Member } from "./types";
-import { sampleCabinet, sampleMembers } from "./sample";
+import type { Member, President } from "./types";
+import { sampleMembers, samplePresident } from "./sample";
 
 // GCP_PROJECT / GCP_SA_KEY(서비스계정 JSON 문자열)가 없으면 로컬 개발용 가짜 데이터를 쓴다.
 const project = process.env.GCP_PROJECT;
@@ -37,15 +37,17 @@ export async function getMember(code: string): Promise<Member | null> {
   return rows[0] ?? null;
 }
 
-export async function getCabinet(): Promise<CabinetPost[]> {
-  if (usingSampleData) return sampleCabinet;
-  const rows = await query<Omit<CabinetPost, "start_date"> & { start_date: { value: string } | string | null }>(
-    `SELECT position, rank_order, name, start_date, verified FROM \`${project}.${dataset}.v_current_cabinet\` ORDER BY rank_order`,
+export async function getPresident(): Promise<President | null> {
+  if (usingSampleData) return samplePresident;
+  const rows = await query<Omit<President, "start_date"> & { start_date: { value: string } | string | null }>(
+    `SELECT name, start_date, verified FROM \`${project}.${dataset}.v_current_president\` LIMIT 1`,
   );
+  const r = rows[0];
+  if (!r) return null;
   // BigQuery DATE는 {value: "YYYY-MM-DD"} 객체로 온다
-  return rows.map((r) => ({
-    ...r,
+  return {
+    name: r.name,
     start_date: r.start_date && typeof r.start_date === "object" ? r.start_date.value : r.start_date,
     verified: Boolean(r.verified),
-  }));
+  };
 }

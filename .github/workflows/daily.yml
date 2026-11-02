@@ -1,6 +1,6 @@
 name: daily
 
-# 매일: 국회의원·국무위원 수집 → 스테이징 적재 → members/cabinet MERGE(SCD2) → 변경 Issue → 사이트 재검증
+# 매일: 국회의원·대통령 수집 → 스테이징 적재 → members/president MERGE(SCD2) → 변경 Issue → 사이트 재검증
 # 적재·MERGE SQL은 이 파일과 pipeline/sql/dml/*.sql을 PR로 승인한 것으로 간주한다(CLAUDE.md 절대 규칙 1).
 
 on:
@@ -33,8 +33,8 @@ jobs:
           ASSEMBLY_API_KEY: ${{ secrets.ASSEMBLY_API_KEY }}
         run: python pipeline/python/collect_assembly.py
 
-      - name: 대통령·국무위원 수집(위키백과 + 기관 누리집 교차검증)
-        run: python pipeline/python/collect_cabinet.py
+      - name: 대통령 수집(위키백과 + 대통령실 누리집 교차검증)
+        run: python pipeline/python/collect_president.py
 
       - name: GCP 인증(쓰기용 서비스계정)
         uses: google-github-actions/auth@v2
@@ -47,11 +47,11 @@ jobs:
       - name: members MERGE
         run: python pipeline/python/apply_sql.py pipeline/sql/dml/merge_members.sql --approve
 
-      - name: 국무위원 스테이징 적재(날짜별 누적)
-        run: python pipeline/python/load_snapshot.py pipeline/out/cabinet_$(date -u -d '+9 hours' +%Y%m%d).jsonl --table stg_cabinet --append --approve
+      - name: 대통령 스테이징 적재(날짜별 누적)
+        run: python pipeline/python/load_snapshot.py pipeline/out/president_$(date -u -d '+9 hours' +%Y%m%d).jsonl --table stg_president --append --approve
 
-      - name: cabinet MERGE
-        run: python pipeline/python/apply_sql.py pipeline/sql/dml/merge_cabinet.sql --approve
+      - name: president MERGE
+        run: python pipeline/python/apply_sql.py pipeline/sql/dml/merge_president.sql --approve
 
       - name: 변경 내역 Issue
         env:
